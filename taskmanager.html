@@ -3,67 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <title>Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+    button {
+      margin-left: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Task Manager</h1>
+  <h1>📝 Task Manager</h1>
 
   <input type="text" id="taskInput" placeholder="Enter a task">
   <button onclick="addTask()">Add Task</button>
 
-  <h2>All Tasks:</h2>
+  <h2>Tasks:</h2>
   <ul id="taskList"></ul>
 
   <script>
-    const apiBase = 'http://127.0.0.1:8000';
+    const apiBase = "http://127.0.0.1:8000";
 
     async function loadTasks() {
       try {
         const res = await fetch(`${apiBase}/task/`);
+        if (!res.ok) throw new Error("Failed to fetch tasks");
         const tasks = await res.json();
+
         const list = document.getElementById("taskList");
         list.innerHTML = "";
 
-        for (const [id, text] of Object.entries(tasks)) {
+        for (const [id, task] of Object.entries(tasks)) {
           const li = document.createElement("li");
-          li.innerHTML = `${id}: ${text} <button onclick="deleteTask(${id})">Delete</button>`;
+          li.className = task.completed ? "completed" : "";
+
+          li.innerHTML = `
+            ${task.text}
+            ${!task.completed ? `<button onclick="completeTask(${id})">Complete</button>` : ""}
+            <button onclick="deleteTask(${id})">Delete</button>
+          `;
+
           list.appendChild(li);
         }
       } catch (err) {
-        console.error("Failed to load tasks:", err);
-        alert("Could not fetch tasks.");
+        console.error("Error:", err);
+        alert("Could not load tasks.");
       }
     }
 
     async function addTask() {
       const input = document.getElementById("taskInput");
-      const task = input.value.trim();
-      if (!task) return alert("Enter something first!");
+      const text = input.value.trim();
+      if (!text) {
+        alert("Please enter a task.");
+        return;
+      }
 
       try {
-        await fetch(`${apiBase}/task/add/?text=${encodeURIComponent(task)}`, {
+        const res = await fetch(`${apiBase}/task/add/?text=${encodeURIComponent(text)}`, {
           method: "POST"
         });
+        if (!res.ok) throw new Error("Failed to add task");
         input.value = "";
         loadTasks();
       } catch (err) {
-        console.error("Failed to add task:", err);
+        console.error("Add task error:", err);
         alert("Could not add task.");
+      }
+    }
+
+    async function completeTask(id) {
+      try {
+        const res = await fetch(`${apiBase}/task/${id}/complete/`, {
+          method: "POST"
+        });
+        if (!res.ok) throw new Error("Failed to mark complete");
+        loadTasks();
+      } catch (err) {
+        console.error("Complete task error:", err);
+        alert("Could not mark task as complete.");
       }
     }
 
     async function deleteTask(id) {
       try {
-        await fetch(`${apiBase}/task/${id}/`, {
+        const res = await fetch(`${apiBase}/task/${id}/`, {
           method: "DELETE"
         });
+        if (!res.ok) throw new Error("Failed to delete task");
         loadTasks();
       } catch (err) {
-        console.error("Failed to delete task:", err);
+        console.error("Delete task error:", err);
         alert("Could not delete task.");
       }
     }
 
-    // Load on startup
+    // Load tasks on page load
     loadTasks();
   </script>
 </body>

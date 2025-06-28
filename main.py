@@ -27,8 +27,13 @@ def taskById(taskid: int):
 
 @app.post('/task/add/')
 def addtask(text : str):
-    tasklist[len(tasklist)] = text
+    tasklist[len(tasklist)] = {"text":text,"completed":False}
     return {"message":"task added", "taskid":len(tasklist)-1}
+
+@app.post('/task/{taskid}/complete/')
+def addtask(taskid : int):
+    tasklist[taskid]["completed"] = True
+    return {"message":"task completed"}
 
 @app.delete('/task/{taskid}/')
 def deletetask(taskid : int):
