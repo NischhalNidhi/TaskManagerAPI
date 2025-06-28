@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Manager</title>
+</head>
+<body>
+  <h1>Task Manager</h1>
+
+  <input type="text" id="taskInput" placeholder="Enter a task">
+  <button onclick="addTask()">Add Task</button>
+
+  <h2>All Tasks:</h2>
+  <ul id="taskList"></ul>
+
+  <script>
+    const apiBase = 'http://127.0.0.1:8000';
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(`${apiBase}/task/`);
+        const tasks = await res.json();
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        for (const [id, text] of Object.entries(tasks)) {
+          const li = document.createElement("li");
+          li.innerHTML = `${id}: ${text} <button onclick="deleteTask(${id})">Delete</button>`;
+          list.appendChild(li);
+        }
+      } catch (err) {
+        console.error("Failed to load tasks:", err);
+        alert("Could not fetch tasks.");
+      }
+    }
+
+    async function addTask() {
+      const input = document.getElementById("taskInput");
+      const task = input.value.trim();
+      if (!task) return alert("Enter something first!");
+
+      try {
+        await fetch(`${apiBase}/task/add/?text=${encodeURIComponent(task)}`, {
+          method: "POST"
+        });
+        input.value = "";
+        loadTasks();
+      } catch (err) {
+        console.error("Failed to add task:", err);
+        alert("Could not add task.");
+      }
+    }
+
+    async function deleteTask(id) {
+      try {
+        await fetch(`${apiBase}/task/${id}/`, {
+          method: "DELETE"
+        });
+        loadTasks();
+      } catch (err) {
+        console.error("Failed to delete task:", err);
+        alert("Could not delete task.");
+      }
+    }
+
+    // Load on startup
+    loadTasks();
+  </script>
+</body>
+</html>
