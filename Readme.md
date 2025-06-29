@@ -1,4 +1,5 @@
-# My task manager project.A simple and intuitive task manager application to help you organize and keep track of your tasks efficiently.
+# My task manager project.
+A simple and intuitive task manager application to help you organize and keep track of your tasks efficiently.
 
 ## Features
 
