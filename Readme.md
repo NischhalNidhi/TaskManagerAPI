@@ -4,4 +4,3 @@ A simple and intuitive task manager application to help you organize and keep tr
 ## Features
 - Create, edit, and delete tasks
 - Mark tasks as completed
-- Prioritize tasks
